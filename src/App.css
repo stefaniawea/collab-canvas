@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "SF Pro Text", Helvetica, Arial, sans-serif;
+  margin: 0;
+}
