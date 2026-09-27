@@ -212,9 +212,34 @@ export default function ZoomableCanvas() {
           width={800}
           height={500}
         /> */}
-        <img src="public/images/lama.jpg" alt="Lama" width={360} height={270} />
 
-        <img src="public/images/lama.jpg" alt="Lama" width={768} height={432} />
+        {/* not enough time to get it to work nicely */}
+        {/* <ObjLoader objPath="/models/triangle.obj" /> */}
+
+        {/* 3x3 grid: position each image by adding a zone class, e.g. "top-left" or "bottom-center" */}
+        <div className="canvas-grid absolute inset-0">
+          <div className="top-left">
+            <img src="/images/leaf.png" alt="Leaf" width={360} height={270} />
+          </div>
+
+          <div className="middle-center">
+            <img
+              src="/images/diamond.png"
+              alt="Diamond"
+              width={768}
+              height={432}
+            />
+          </div>
+
+          <div className="bottom-right">
+            <img
+              src="/images/flower.png"
+              alt="Flower"
+              width={128}
+              height={72}
+            />
+          </div>
+        </div>
 
         <CommentLayer scale={zoom / 100} />
       </div>

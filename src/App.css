@@ -8,3 +8,79 @@ body {
   font-family: "SF Pro Text", Helvetica, Arial, sans-serif;
   margin: 0;
 }
+
+/* 3x3 positioning grid */
+.canvas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 100%;
+  height: 100%;
+}
+
+.canvas-grid > * {
+  display: flex;
+}
+
+.canvas-grid .top-left {
+  grid-column: 1;
+  grid-row: 1;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.canvas-grid .top-center {
+  grid-column: 2;
+  grid-row: 1;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.canvas-grid .top-right {
+  grid-column: 3;
+  grid-row: 1;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.canvas-grid .middle-left {
+  grid-column: 1;
+  grid-row: 2;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.canvas-grid .middle-center {
+  grid-column: 2;
+  grid-row: 2;
+  align-items: center;
+  justify-content: center;
+}
+
+.canvas-grid .middle-right {
+  grid-column: 3;
+  grid-row: 2;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.canvas-grid .bottom-left {
+  grid-column: 1;
+  grid-row: 3;
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+.canvas-grid .bottom-center {
+  grid-column: 2;
+  grid-row: 3;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.canvas-grid .bottom-right {
+  grid-column: 3;
+  grid-row: 3;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
