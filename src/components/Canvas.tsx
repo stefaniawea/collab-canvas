@@ -10,10 +10,18 @@ const DEFAULT_ZOOM = 100;
 const SENSITIVITY = 0.5;
 const SMOOTHING_FACTOR = 0.12;
 
+type PanPoint = { x: number; y: number };
+
 export default function ZoomableCanvas() {
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+  const [pan, setPan] = useState<PanPoint>({ x: 0, y: 0 });
 
   const targetZoom = useRef(DEFAULT_ZOOM);
+  const currentZoom = useRef(DEFAULT_ZOOM);
+
+  const targetPan = useRef<PanPoint>({ x: 0, y: 0 });
+  const currentPan = useRef<PanPoint>({ x: 0, y: 0 });
+
   const animationFrame = useRef<number | null>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -21,26 +29,56 @@ export default function ZoomableCanvas() {
   const { draft, startDraft, cancelDraft } = useComments();
 
   const animateZoom = () => {
-    setZoom((current) => {
-      const target = targetZoom.current;
-      const difference = target - current;
-      // too small diff, no animation performed
-      if (Math.abs(difference) < 0.1) {
-        animationFrame.current = null;
-        return target;
-      }
+    const zoomDifference = targetZoom.current - currentZoom.current;
+    const panDifference = {
+      x: targetPan.current.x - currentPan.current.x,
+      y: targetPan.current.y - currentPan.current.y,
+    };
 
-      // animate smooth zoom
-      const next = current + difference * SMOOTHING_FACTOR;
+    if (
+      Math.abs(zoomDifference) < 0.1 &&
+      Math.abs(panDifference.x) < 0.1 &&
+      Math.abs(panDifference.y) < 0.1
+    ) {
+      currentZoom.current = targetZoom.current;
+      currentPan.current = targetPan.current;
+      setZoom(targetZoom.current);
+      setPan(targetPan.current);
+      animationFrame.current = null;
+      return;
+    }
 
-      animationFrame.current = requestAnimationFrame(animateZoom);
+    const nextZoom = currentZoom.current + zoomDifference * SMOOTHING_FACTOR;
+    const nextPan = {
+      x: currentPan.current.x + panDifference.x * SMOOTHING_FACTOR,
+      y: currentPan.current.y + panDifference.y * SMOOTHING_FACTOR,
+    };
 
-      return next;
-    });
+    currentZoom.current = nextZoom;
+    currentPan.current = nextPan;
+    setZoom(nextZoom);
+    setPan(nextPan);
+    animationFrame.current = requestAnimationFrame(animateZoom);
   };
 
-  const zoomTo = (value: number) => {
-    targetZoom.current = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value));
+  const zoomTo = (value: number, anchor?: PanPoint) => {
+    const nextZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value));
+
+    if (anchor) {
+      const currentScale = currentZoom.current / 100;
+      const contentPoint = {
+        x: (anchor.x - currentPan.current.x) / currentScale,
+        y: (anchor.y - currentPan.current.y) / currentScale,
+      };
+      const nextScale = nextZoom / 100;
+
+      targetPan.current = {
+        x: anchor.x - contentPoint.x * nextScale,
+        y: anchor.y - contentPoint.y * nextScale,
+      };
+    }
+
+    targetZoom.current = nextZoom;
 
     if (!animationFrame.current) {
       // starts animating the zoom - runs animateZoom before next frame/browser repaint
@@ -82,7 +120,11 @@ export default function ZoomableCanvas() {
       e.preventDefault();
 
       const delta = -e.deltaY * SENSITIVITY;
-      zoomTo(targetZoom.current + delta);
+      const bounds = element.getBoundingClientRect();
+      zoomTo(targetZoom.current + delta, {
+        x: e.clientX - bounds.left,
+        y: e.clientY - bounds.top,
+      });
     };
 
     // listens to mouse wheel or trackpad scrolls
@@ -108,6 +150,7 @@ export default function ZoomableCanvas() {
   return (
     <div
       className="relative w-screen h-screen overflow-auto bg-gray-100 touch-none"
+      data-testid="canvas-container"
       ref={canvasContainerRef}
     >
       {/* Zoom controls */}
@@ -152,12 +195,13 @@ export default function ZoomableCanvas() {
 
       {/* Canvas */}
       <div
-        className="absolute top-0 left-0 right-0 bottom-0 bg-white origin-center will-change-transform border border-gray-200 shadow-[0_4px_20px_rgba(0,0,0,0.1)]"
+        className="absolute top-0 left-0 right-0 bottom-0 bg-white origin-top-left will-change-transform border border-gray-200 shadow-[0_4px_20px_rgba(0,0,0,0.1)]"
+        data-testid="canvas"
         onClick={handleCanvasClick}
         ref={canvasRef}
         style={{
           transform: `
-            translate(0%, 0%)
+            translate(${pan.x}px, ${pan.y}px)
             scale(${zoom / 100})
           `,
         }}

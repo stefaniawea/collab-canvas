@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CommentsProvider } from "../context/CommentsContext";
 import { IdentityProvider } from "../context/IdentityContext";
 import Canvas from "./Canvas";
@@ -47,5 +47,35 @@ describe("Canvas", () => {
     await waitFor(() => expect(screen.getByRole("slider")).toHaveValue("110"), {
       timeout: 3000,
     });
+  });
+
+  it("keeps the cursor position anchored while zooming", async () => {
+    renderCanvas();
+
+    const container = screen.getByTestId("canvas-container");
+    vi.spyOn(container, "getBoundingClientRect").mockReturnValue({
+      bottom: 600,
+      height: 600,
+      left: 0,
+      right: 800,
+      toJSON: () => ({}),
+      top: 0,
+      width: 800,
+      x: 0,
+      y: 0,
+    });
+
+    fireEvent.wheel(container, { clientX: 200, clientY: 150, deltaY: -20 });
+
+    await waitFor(() => {
+      expect(screen.getByRole("slider")).toHaveValue("110");
+      const transform = screen.getByTestId("canvas").style.transform;
+      const translation = transform.match(/translate\(([-\d.]+)px, ([-\d.]+)px\)/);
+
+      expect(translation).not.toBeNull();
+      expect(Number(translation?.[1])).toBeCloseTo(-20, 5);
+      expect(Number(translation?.[2])).toBeCloseTo(-15, 5);
+      expect(transform).toContain("scale(1.1)");
+    }, { timeout: 3000 });
   });
 });
