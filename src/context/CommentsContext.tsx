@@ -22,6 +22,7 @@ export type ThreadMessage = {
 // a comment = the root message of a thread
 export type Comment = ThreadMessage & {
   replies: ThreadMessage[];
+  resolved: boolean;
   x: number; // x coordinate on canvas
   y: number; // y coordinate on canvas
 };
@@ -35,6 +36,7 @@ type CommentsContextType = {
   cancelDraft: () => void;
   commitDraft: (text: string) => void;
   updateComment: (id: string, text: string) => void;
+  toggleResolved: (id: string) => void;
   removeComment: (id: string) => void;
   addReply: (commentId: string, text: string) => void;
   updateReply: (commentId: string, replyId: string, text: string) => void;
@@ -54,6 +56,7 @@ const getStoredComments = (): Comment[] => {
     return (parsed as Comment[]).map((comment) => ({
       ...comment,
       replies: comment.replies ?? [],
+      resolved: comment.resolved ?? false,
     }));
   } catch {
     return [];
@@ -98,6 +101,7 @@ export const CommentsProvider = ({
           text: trimmed,
           createdAt: Date.now(),
           replies: [],
+          resolved: false,
         },
       ]);
       setDraft(null);
@@ -107,6 +111,16 @@ export const CommentsProvider = ({
 
   const removeComment = useCallback((id: string) => {
     setComments((current) => current.filter((comment) => comment.id !== id));
+  }, []);
+
+  const toggleResolved = useCallback((id: string) => {
+    setComments((current) =>
+      current.map((comment) =>
+        comment.id === id
+          ? { ...comment, resolved: !comment.resolved }
+          : comment,
+      ),
+    );
   }, []);
 
   const updateComment = useCallback(
@@ -214,6 +228,7 @@ export const CommentsProvider = ({
       cancelDraft,
       commitDraft,
       updateComment,
+      toggleResolved,
       removeComment,
       addReply,
       updateReply,
@@ -226,6 +241,7 @@ export const CommentsProvider = ({
       cancelDraft,
       commitDraft,
       updateComment,
+      toggleResolved,
       removeComment,
       addReply,
       updateReply,

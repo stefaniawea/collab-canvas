@@ -18,6 +18,7 @@ const CommentLayer = ({ scale }: CommentLayerProps) => {
     cancelDraft,
     commitDraft,
     updateComment,
+    toggleResolved,
     removeComment,
     addReply,
     updateReply,
@@ -130,7 +131,7 @@ const CommentLayer = ({ scale }: CommentLayerProps) => {
         return (
           <div
             key={comment.id}
-            className="absolute z-20 flex max-w-[220px] flex-col gap-2 rounded-sm bg-white px-2 py-1 text-sm shadow-[0_2px_8px_rgba(0,0,0,0.25)] origin-top-left"
+            className={`absolute z-20 flex max-w-[220px] flex-col gap-2 rounded-sm px-2 py-1 text-sm shadow-[0_2px_8px_rgba(0,0,0,0.25)] origin-top-left ${comment.resolved ? "bg-green-50" : "bg-white"}`}
             onClick={(e) => e.stopPropagation()}
             style={{
               left: comment.x,
@@ -159,7 +160,7 @@ const CommentLayer = ({ scale }: CommentLayerProps) => {
                 </div>
               </div>
             ) : (
-              <div className="flex items-start gap-2">
+              <div className="flex items-start justify-between gap-2">
                 <button
                   className="flex flex-col text-left disabled:cursor-default overflow-hidden"
                   disabled={!isMe}
@@ -228,7 +229,7 @@ const CommentLayer = ({ scale }: CommentLayerProps) => {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex items-start gap-2">
+                        <div className="flex items-start justify-between gap-2">
                           <button
                             className="flex flex-col text-left disabled:cursor-default overflow-hidden"
                             disabled={!isReplyMe}
@@ -298,13 +299,26 @@ const CommentLayer = ({ scale }: CommentLayerProps) => {
                 </div>
               </div>
             ) : (
-              <button
-                className="self-start text-xs text-gray-500 border-t pt-2 w-full text-left"
-                onClick={() => startReplying(comment.id)}
-                type="button"
-              >
-                Reply
-              </button>
+              <div className="flex items-center justify-between gap-2 border-t pt-2 text-xs">
+                <button
+                  className="text-gray-500"
+                  onClick={() => startReplying(comment.id)}
+                  type="button"
+                >
+                  Reply
+                </button>
+
+                <button
+                  aria-label={
+                    comment.resolved ? "Reopen thread" : "Resolve thread"
+                  }
+                  className="text-gray-500 text-base"
+                  onClick={() => toggleResolved(comment.id)}
+                  type="button"
+                >
+                  {comment.resolved ? "✅" : "☑️"}
+                </button>
+              </div>
             )}
           </div>
         );

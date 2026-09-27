@@ -20,6 +20,7 @@ const comment = {
   x: 20,
   y: 30,
   replies: [],
+  resolved: false,
 };
 
 function DraftController() {
@@ -99,5 +100,23 @@ describe("CommentLayer", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Delete reply" }));
     expect(screen.queryByText("A reply")).not.toBeInTheDocument();
+  });
+
+  it("resolves and reopens the full comment thread", () => {
+    renderCommentLayer();
+
+    expect(screen.getByTestId("thread-status")).toHaveTextContent("Open");
+
+    fireEvent.click(screen.getByRole("button", { name: "Resolve thread" }));
+
+    expect(screen.getByTestId("thread-status")).toHaveTextContent("Resolved");
+    expect(
+      JSON.parse(window.localStorage.getItem("collab-canvas:comments")!)[0]
+        .resolved,
+    ).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "Reopen thread" }));
+
+    expect(screen.getByTestId("thread-status")).toHaveTextContent("Open");
   });
 });
