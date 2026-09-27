@@ -1,8 +1,16 @@
+import ZoomableCanvas from "./components/Canvas";
+import { CommentsProvider } from "./context/CommentsContext";
+import { IdentityProvider } from "./context/IdentityContext";
+
 const App = () => {
   return (
     <main>
-      <h1 className="text-4xl font-bold text-blue-600">Collaboration Canvas</h1>
-      <p>Let's comment like crazy</p>
+      <h1 className="hidden">Collaboration Canvas</h1>
+      <IdentityProvider>
+        <CommentsProvider>
+          <ZoomableCanvas />
+        </CommentsProvider>
+      </IdentityProvider>
     </main>
   );
 };
