@@ -11,7 +11,7 @@ type EditTarget = {
   replyId: string | null;
 };
 
-export default function CommentLayer({ scale }: CommentLayerProps) {
+const CommentLayer = ({ scale }: CommentLayerProps) => {
   const {
     comments,
     draft,
@@ -355,4 +355,6 @@ export default function CommentLayer({ scale }: CommentLayerProps) {
       )}
     </>
   );
-}
+};
+
+export default CommentLayer;
